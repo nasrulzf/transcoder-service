@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  net8-console:
+    image: mcr.microsoft.com/dotnet/runtime:8.0
+    container_name: net8_console
+    volumes:
+      - ./console-app:/app
+    working_dir: /app
+    # command: ["dotnet", "run"]
+    depends_on:
+      - rabbitmq
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+    build:
+      context: ./console-app
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  net8-webapi:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    container_name: net8_webapi
+    ports:
+      - "5000:80"
+    volumes:
+      - ./webapi:/app
+    working_dir: /app
+    # command: ["dotnet", "run"]
+    depends_on:
+      - rabbitmq
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+    build:
+      context: ./webapi
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
