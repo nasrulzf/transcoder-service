@@ -1,0 +1,6 @@
+@Transcoder.WebApi_HostAddress = http://localhost:5120
+
+GET {{Transcoder.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
