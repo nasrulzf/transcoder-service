@@ -1,4 +1,9 @@
+using System.Text;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using Transcoder.WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +43,7 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast")
 .WithOpenApi();
 
-app.MapPost("/videotranscode", async () =>
+app.MapPost("/videotranscode", async ([FromBody] TranscodeRequest request) =>
 {
     var factory = new ConnectionFactory()
     {
@@ -46,6 +51,21 @@ app.MapPost("/videotranscode", async () =>
     };
 
     IConnection conn = await factory.CreateConnectionAsync();
+    using var channel = await conn.CreateChannelAsync();
+
+    string transcoderExchange = "transcoder";
+
+    await channel.ExchangeDeclareAsync(exchange: transcoderExchange,
+    type: ExchangeType.Fanout);
+
+    var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));
+
+    await channel.BasicPublishAsync(
+        exchange: transcoderExchange,
+        routingKey: string.Empty,
+        body: body
+    );
+
 });
 
 app.Run();

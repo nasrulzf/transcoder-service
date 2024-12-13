@@ -19,7 +19,7 @@ namespace TranscoderService.Console.Transcoder
             string fileName = Path.GetFileNameWithoutExtension(videoPath);
             string ext = Path.GetExtension(videoPath);
             string fileOutputResult = Path.Combine(outputPath, fileName + "_h264_" + videoSize.ToString() + ext);
-            System.Console.WriteLine($"Output file : {fileOutputResult}");
+            System.Console.WriteLine($"Transcoding file started. file : {videoPath}");
             FFMpegArguments
                 .FromFileInput(videoPath)
                 .OutputToFile(fileOutputResult, false, options => options
@@ -32,6 +32,9 @@ namespace TranscoderService.Console.Transcoder
                     .WithCustomArgument("scenecut=0:open_gop=0:min-keyint=72:keyint=72")
                     .WithFastStart())
                 .ProcessSynchronously();
+
+            System.Console.WriteLine($"Transcoding file completed: {fileOutputResult}");
+            System.Console.WriteLine("");
         }
     }
 }

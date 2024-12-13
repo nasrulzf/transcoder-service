@@ -1,6 +1,8 @@
 ﻿using System.Text;
+using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using TranscoderService.Console;
 using TranscoderService.Console.Transcoder;
 
 var factory = new ConnectionFactory()
@@ -11,24 +13,40 @@ var factory = new ConnectionFactory()
 IConnection conn = await factory.CreateConnectionAsync();
 using var channel = await conn.CreateChannelAsync();
 
-await channel.ExchangeDeclareAsync(exchange: "logs",
+string transcoderExchange = "transcoder";
+var videoTranscoder = new VideoTranscoder();
+
+await channel.ExchangeDeclareAsync(exchange: transcoderExchange,
     type: ExchangeType.Fanout);
 
 // declare a server-named queue
 QueueDeclareOk queueDeclareResult = await channel.QueueDeclareAsync();
 string queueName = queueDeclareResult.QueueName;
-await channel.QueueBindAsync(queue: queueName, exchange: "logs", routingKey: string.Empty);
+await channel.QueueBindAsync(queue: queueName, exchange: transcoderExchange, routingKey: string.Empty);
 
-Console.WriteLine(" [*] Waiting for logs.");
+Console.WriteLine(" [*] Waiting for request.");
 
 var consumer = new AsyncEventingBasicConsumer(channel);
 consumer.ReceivedAsync += (model, ea) =>
 {
     byte[] body = ea.Body.ToArray();
     var message = Encoding.UTF8.GetString(body);
-    Console.WriteLine($" [x] {message}");
+    var transcoderRequest = JsonSerializer.Deserialize<TranscodeRequest>(message);
 
-    new VideoTranscoder().Transcode(args[0], args[1], FFMpegCore.Enums.VideoSize.Ld);
+    Console.WriteLine($"Transcoding Request Received : {transcoderRequest!.FilePath}");
+
+    switch (transcoderRequest.Definition)
+    {
+        case "LD":
+            videoTranscoder.Transcode(transcoderRequest!.FilePath, transcoderRequest!.TranscodedDirectory, FFMpegCore.Enums.VideoSize.Ld);
+            break;
+        case "HD":
+            videoTranscoder.Transcode(transcoderRequest!.FilePath, transcoderRequest!.TranscodedDirectory, FFMpegCore.Enums.VideoSize.Hd);
+            break;
+        case "FHD":
+            videoTranscoder.Transcode(transcoderRequest!.FilePath, transcoderRequest!.TranscodedDirectory, FFMpegCore.Enums.VideoSize.FullHd);
+            break;
+    }
 
     return Task.CompletedTask;
 };
