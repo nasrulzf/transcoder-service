@@ -1,10 +1,15 @@
 ﻿using System.Text;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using TranscoderService.Console.Transcoder;
 
-var factory = new ConnectionFactory { HostName = "localhost" };
-using var connection = await factory.CreateConnectionAsync();
-using var channel = await connection.CreateChannelAsync();
+var factory = new ConnectionFactory()
+{
+    Uri = new Uri("amqp://user:password@rabbitmq:5672/")
+};
+
+IConnection conn = await factory.CreateConnectionAsync();
+using var channel = await conn.CreateChannelAsync();
 
 await channel.ExchangeDeclareAsync(exchange: "logs",
     type: ExchangeType.Fanout);
@@ -22,6 +27,9 @@ consumer.ReceivedAsync += (model, ea) =>
     byte[] body = ea.Body.ToArray();
     var message = Encoding.UTF8.GetString(body);
     Console.WriteLine($" [x] {message}");
+
+    new VideoTranscoder().Transcode(args[0], args[1], FFMpegCore.Enums.VideoSize.Ld);
+
     return Task.CompletedTask;
 };
 
