@@ -4,10 +4,11 @@ services:
   net8-console:
     image: mcr.microsoft.com/dotnet/runtime:8.0
     container_name: net8_console
+    restart: always
     volumes:
-      - ./console-app:/app
+      - ./data:/data
     working_dir: /app
-    # command: ["dotnet", "run"]
+    command: ["dotnet", "run"]
     depends_on:
       - rabbitmq
     environment:
@@ -17,18 +18,16 @@ services:
     build:
       context: ./console-app
       dockerfile: Dockerfile
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   net8-webapi:
     image: mcr.microsoft.com/dotnet/aspnet:8.0
     container_name: net8_webapi
     ports:
-      - "5000:80"
+      - "5000:5120"
     volumes:
-      - ./webapi:/app
+      - ./data:/data
     working_dir: /app
-    # command: ["dotnet", "run"]
+    command: ["dotnet", "run"]
     depends_on:
       - rabbitmq
     environment:
@@ -38,8 +37,6 @@ services:
     build:
       context: ./webapi
       dockerfile: Dockerfile
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   rabbitmq:
     image: rabbitmq:3-management

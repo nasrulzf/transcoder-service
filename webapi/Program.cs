@@ -47,7 +47,7 @@ app.MapPost("/videotranscode", async ([FromBody] TranscodeRequest request) =>
 {
     var factory = new ConnectionFactory()
     {
-        Uri = new Uri("amqp://user:password@rabbitmq:5672/")
+        Uri = new Uri("amqp://user:password@rabbitmq:5672")
     };
 
     IConnection conn = await factory.CreateConnectionAsync();

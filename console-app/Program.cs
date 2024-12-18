@@ -7,7 +7,7 @@ using TranscoderService.Console.Transcoder;
 
 var factory = new ConnectionFactory()
 {
-    Uri = new Uri("amqp://user:password@rabbitmq:5672/")
+    Uri = new Uri("amqp://user:password@rabbitmq:5672")
 };
 
 IConnection conn = await factory.CreateConnectionAsync();
@@ -27,7 +27,7 @@ await channel.QueueBindAsync(queue: queueName, exchange: transcoderExchange, rou
 Console.WriteLine(" [*] Waiting for request.");
 
 var consumer = new AsyncEventingBasicConsumer(channel);
-consumer.ReceivedAsync += (model, ea) =>
+consumer.ReceivedAsync += async (model, ea) =>
 {
     byte[] body = ea.Body.ToArray();
     var message = Encoding.UTF8.GetString(body);
@@ -48,10 +48,16 @@ consumer.ReceivedAsync += (model, ea) =>
             break;
     }
 
-    return Task.CompletedTask;
+    await channel.BasicAckAsync(ea.DeliveryTag, false);
 };
 
 await channel.BasicConsumeAsync(queueName, autoAck: true, consumer: consumer);
+
+// Keep the connection alive
+while (conn.IsOpen)
+{
+    await Task.Delay(1000);
+}
 
 Console.WriteLine(" Press [enter] to exit.");
 Console.ReadLine();
