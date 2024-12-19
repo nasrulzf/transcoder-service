@@ -38,6 +38,19 @@ services:
       context: ./webapi
       dockerfile: Dockerfile
 
+  net8-webclient:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    container_name: net8_webclient
+    ports:
+      - "5001:8080"
+    volumes:
+      - ./data:/data
+    working_dir: /app
+    command: ["dotnet", "run"]    
+    build:
+      context: ./webclient
+      dockerfile: Dockerfile
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
