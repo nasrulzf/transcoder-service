@@ -18,4 +18,7 @@ RUN dotnet publish "TranscoderService.Console.csproj" -c $configuration -o /app/
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# RUN chmod +x third-party/packager-linux-x64
+
 ENTRYPOINT ["dotnet", "TranscoderService.Console.dll"]

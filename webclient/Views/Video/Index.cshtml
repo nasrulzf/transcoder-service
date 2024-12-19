@@ -1,0 +1,16 @@
+@model IEnumerable<string>
+
+@{
+    ViewData["Title"] = "Video List";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Video List</h1>
+    <ul>
+    @foreach(var item in Model)
+    {
+        <li><a href="@Url.Action("player", "video", new {file = @item})">@item</a></li>
+    }
+    </ul>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>

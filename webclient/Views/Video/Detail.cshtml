@@ -1,0 +1,52 @@
+@model string
+
+@{
+    ViewData["Title"] = "Video Viewer";
+}
+
+<div class="text-center">
+    <h1 class="display-4">EZDRM with Shaka Player</h1>
+    <p>Demo with Shaka Player</p>
+</div>
+
+<h2>DRM Protected Video Playback</h2>
+    <video id="video" width="640" controls autoplay></video>
+
+    <!-- Include Shaka Player JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.0.0/shaka-player.compiled.js"></script>
+
+    <script>
+        async function initPlayer() {
+            const video = document.getElementById('video');
+            const player = new shaka.Player(video);
+
+            // Error handling
+            player.addEventListener('error', (e) => {
+                console.error('Error code', e.detail.code, 'object', e.detail);
+            });
+
+            // Configure DRM license server URLs
+            player.configure({
+                drm: {
+                    servers: {
+                        'com.widevine.alpha': 'https://widevine-dash.ezdrm.com/widevine-php/widevine-foreignkey.php?pX=E503E1',
+                        'com.microsoft.playready': 'https://playready.ezdrm.com/cency/preauth.aspx?pX=E503E1'
+                    },
+
+                    @* clearKeys: {
+                        '43feb387fb6e44edb9dc67fb6dbfaabb': '0a9ca9cf0d7199dc844c0a786390aed5'
+                    } *@
+                }
+            });
+
+            // Load the encrypted DASH video
+            try {
+                await player.load('@Url.Action("file", "video")?name=@Model/h264.mpd');  // Local path to your DASH manifest
+                console.log('The video has successfully loaded.');
+            } catch (e) {
+                console.error('Error loading video', e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initPlayer);
+ </script>

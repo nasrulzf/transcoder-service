@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="third-party/packager-linux-x64" CopyToOutputDirectory="Always" />
     <PackageReference Include="FFMpegCore" Version="5.1.0" />
     <PackageReference Include="RabbitMQ.Client" Version="7.0.0" />
   </ItemGroup>

@@ -14,7 +14,7 @@ namespace TranscoderService.Console.Transcoder
             -minrate 600k -maxrate 600k -bufsize 600k -b:v 600k \
             -y h264_baseline_360p_600.mp4
         */
-        public void Transcode(string videoPath, string outputPath, VideoSize videoSize)
+        public string Transcode(string videoPath, string outputPath, VideoSize videoSize)
         {
             string fileName = Path.GetFileNameWithoutExtension(videoPath);
             string ext = Path.GetExtension(videoPath);
@@ -35,6 +35,8 @@ namespace TranscoderService.Console.Transcoder
 
             System.Console.WriteLine($"Transcoding file completed: {fileOutputResult}");
             System.Console.WriteLine("");
+
+            return fileOutputResult;
         }
     }
 }
